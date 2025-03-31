@@ -3,12 +3,12 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import LoginRegisterPage from "./pages/LoginRegisterPage";
 import UserDashboard from "./pages/UserDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
-import HorasExtrasTab from "./components/HorasExtrasTab"; // Importa a página de RH
+import HorasExtrasTab from "./components/HorasExtrasTab"; 
 import WorkshiftProvider from "./context/WorkshiftContext";
-import { UserProvider } from "./context/UserContext"; // Importa o UserProvider
+import { UserProvider } from "./context/UserContext"; 
 
 // Componente para proteger rotas com base no papel do usuário
-const ProtectedRoute = ({ children, requiredRole }) => {
+const ProtectedRoute = ({ children, allowedRoles }) => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   // Verificar se o usuário está autenticado
@@ -16,12 +16,11 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/" replace />;
   }
 
-  // Verificar se o usuário tem o papel necessário para acessar a rota
-  if (requiredRole === "ADMIN" && !user.roles?.includes("ADMIN")) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  // Garante que roles seja um array válido
+  const userRoles = Array.isArray(user.roles) ? user.roles : [];
 
-  if (requiredRole === "FUNCIONARIO" && !user.roles?.includes("FUNCIONARIO")) {
+  // Verifica se o usuário tem permissão
+  if (!userRoles.some(role => allowedRoles.includes(role))) {
     return <Navigate to="/" replace />;
   }
 
@@ -30,38 +29,38 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
 const App = () => {
   return (
-    <UserProvider> {/* Envolvendo toda a aplicação com UserProvider */}
+    <UserProvider> 
       <WorkshiftProvider>
         <Router>
           <Routes>
             {/* Página inicial (login e registro) */}
             <Route path="/" element={<LoginRegisterPage />} />
 
-            {/* Rota protegida do Dashboard para funcionários */}
+            {/* Dashboard acessível para ADMIN e FUNCIONARIO */}
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute requiredRole="FUNCIONARIO">
+                <ProtectedRoute allowedRoles={["ADMIN", "FUNCIONARIO"]}>
                   <UserDashboard />
                 </ProtectedRoute>
               }
             />
 
-            {/* Rota protegida da Administração apenas para admins */}
+            {/* Dashboard exclusivo para ADMIN */}
             <Route
               path="/admin"
               element={
-                <ProtectedRoute requiredRole="ADMIN">
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
                   <AdminDashboard />
                 </ProtectedRoute>
               }
             />
 
-            {/* Rota protegida para RH (apenas ADMIN pode acessar) */}
+            {/* Página de RH (somente ADMIN pode acessar) */}
             <Route
               path="/rh"
               element={
-                <ProtectedRoute requiredRole="ADMIN">
+                <ProtectedRoute allowedRoles={["ADMIN"]}>
                   <HorasExtrasTab />
                 </ProtectedRoute>
               }
