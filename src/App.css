@@ -1,0 +1,28 @@
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .header {
+    background-color: #4a0e4e;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+  }
+  
+  .nav {
+    margin-top: 20px;
+  }
+  
+  .nav a {
+    margin-right: 15px;
+    color: #4a0e4e;
+    text-decoration: none;
+  }
+  
+  .nav a:hover {
+    text-decoration: underline;
+  }
+  
