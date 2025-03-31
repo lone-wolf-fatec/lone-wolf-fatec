@@ -3,3 +3,4 @@ alone-front.zip filter=lfs diff=lfs merge=lfs -text
 alone-front filter=lfs diff=lfs merge=lfs -text
 alone-front/* filter=lfs diff=lfs merge=lfs -text
 caminho/para/sua/pasta/** filter=lfs diff=lfs merge=lfs -text
+cuida-emprego-back.zip filter=lfs diff=lfs merge=lfs -text
