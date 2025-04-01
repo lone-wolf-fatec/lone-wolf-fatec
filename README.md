@@ -1,16 +1,26 @@
-## Hi there 👋
+# 🐺 Lone Wolf
 
-<!--
-**lone-wolf-fatec/lone-wolf-fatec** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+## Sobre
+Grupo formado por apenas um integrante para realizar os Projetos de Aprendizagem Integrada (APIs) na FATEC Profº Jessen Vidal (São José dos Campos, São Paulo).
 
-Here are some ideas to get you started:
+## 💻 Projetos
+| Semestre | Projeto | Organização | Descrição |
+|:--------:|:-------:|:-----------:|:---------:|
+| 3º | [CuidaEmprego](https://github.com/lone-wolf-fatec/CuidaEmprego) | FATEC | Aplicação web de batimento de ponto e tudo relacionado ao dia a dia do colaborador e do administrador de emprego. |
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## 🚀 Habilidades
+- Desenvolvimento Front-end
+- Desenvolvimento Back-end
+- Banco de Dados
+- Metodologias Ágeis
+
+## 📊 Contribuições
+```
+█▓▒░ Commits ░▒▓█████▓▒░ Pull Requests ░▒▓███▓▒░ Code Reviews ░▒▓████
+```
+
+## 📫 Contato
+- GitHub: [github.com/carlosintrieri](https://github.com/carlosintrieri)
+- LinkedIn: [linkedin.com/in/carlosintrieri](https://linkedin.com/in/carlosintrieri)
+
+> *"O conhecimento é como um lobo solitário, segue seu próprio caminho."*
