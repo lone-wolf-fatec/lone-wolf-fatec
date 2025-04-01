@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 ## Visão geral do produto 🖥️
 
 **CuidaEmprego** é uma solução web abrangente e inovadora, projetada para otimizar e revolucionar o gerenciamento de ponto dos colaboradores em ambientes corporativos. Esta plataforma integrada oferece um ecossistema completo para o controle preciso da jornada de trabalho, permitindo o registro detalhado de horas trabalhadas, monitoramento automático de horas extras e gerenciamento eficiente de períodos de ausência justificada, como férias e folgas.
@@ -10,7 +10,7 @@ Desenvolvido com tecnologias de ponta, o CuidaEmprego transforma um processo tra
 ---
 
 ## MVP'S 🏆
-
+Em evolução.
 ---
 
 ## Histórias de Usuário 🃏
