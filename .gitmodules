@@ -1,0 +1,6 @@
+[submodule "cuidaemprego-back"]
+	path = cuidaemprego-back
+	url = https://github.com/lone-wolf-fatec/CuidaEmprego-back.git
+[submodule "cuidaemprego-front"]
+	path = cuidaemprego-front
+	url = https://github.com/lone-wolf-fatec/CuidaEmprego-front.git
