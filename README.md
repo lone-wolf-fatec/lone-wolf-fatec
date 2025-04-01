@@ -16,5 +16,5 @@ Grupo formado por apenas um integrante para realizar os Projetos de Aprendizagem
 ```
 ## 📫 Contato
 - GitHub: [github.com/carlosintrieri](https://github.com/carlosintrieri)
-- LinkedIn: [linkedin.com/in/carlosintrieri](https://linkedin.com/in/carlosintrieri)
+- LinkedIn: [linkedin.com/in/carlosintrieri](https://br.linkedin.com/in/carlosintrieri)
 > *"O conhecimento é como um lobo solitário, segue seu próprio caminho."*
