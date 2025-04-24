@@ -5,7 +5,6 @@ import FolgaTab from './FolgaTab';
 const HorasExtrasTab = () => {
   // Estado para controlar as abas
   const [activeTab, setActiveTab] = useState('horasExtras');
-
   // Estados principais para horas extras
   const [overtimeEntries, setOvertimeEntries] = useState(() => {
     const storedOvertimes = localStorage.getItem('overtimeEntries');
@@ -59,7 +58,6 @@ const HorasExtrasTab = () => {
       }
     ];
   });
-
   const [newOvertime, setNewOvertime] = useState({
     funcionarioId: '',
     funcionarioNome: '',
@@ -67,7 +65,6 @@ const HorasExtrasTab = () => {
     hours: '',
     reason: ''
   });
-
   const [allFuncionarios, setAllFuncionarios] = useState([]);
   const [modalRejeitarAberto, setModalRejeitarAberto] = useState(false);
   const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState(null);
@@ -77,7 +74,6 @@ const HorasExtrasTab = () => {
     funcionario: '',
     periodo: ''
   });
-
   // Função para obter todos os funcionários possíveis
   const getAllPossibleFuncionarios = () => {
     try {
@@ -86,29 +82,23 @@ const HorasExtrasTab = () => {
         id: user.id,
         nome: user.name || user.nome
       }));
-
       const storedFuncionarios = JSON.parse(localStorage.getItem('funcionarios') || '[]');
-      
       const funcionariosFromOvertime = overtimeEntries.map(entry => ({
         id: entry.funcionarioId,
         nome: entry.funcionarioNome
       }));
-
       const funcionariosMap = new Map();
-      
       [...funcionariosFromUsers, ...storedFuncionarios, ...funcionariosFromOvertime].forEach(func => {
         if (func && func.id) {
           funcionariosMap.set(func.id, func);
         }
       });
-
       return Array.from(funcionariosMap.values());
     } catch (error) {
       console.error('Erro ao obter funcionários:', error);
       return [];
     }
   };
-
   // useEffect para manter a lista de funcionários atualizada
   useEffect(() => {
     const updateAllFuncionarios = () => {
@@ -119,12 +109,10 @@ const HorasExtrasTab = () => {
     const interval = setInterval(updateAllFuncionarios, 2000);
     return () => clearInterval(interval);
   }, [overtimeEntries]);
-
   // Salvar horas extras no localStorage quando mudar
   useEffect(() => {
     localStorage.setItem('overtimeEntries', JSON.stringify(overtimeEntries));
   }, [overtimeEntries]);
-
   // Filtrar horas extras
   const horasExtrasFiltradas = overtimeEntries.filter(overtime => {
     const matchStatus = filtros.status === '' || overtime.status === filtros.status;
@@ -146,7 +134,6 @@ const HorasExtrasTab = () => {
     }
     return matchStatus && matchFuncionario && matchPeriodo;
   });
-
   // Ordenar por data (mais recentes primeiro)
   const horasExtrasOrdenadas = [...horasExtrasFiltradas].sort((a, b) => {
     const [diaA, mesA, anoA] = a.date.split('/').map(Number);
@@ -155,7 +142,6 @@ const HorasExtrasTab = () => {
     const dateB = new Date(anoB, mesB - 1, diaB);
     return dateB - dateA;
   });
-
   // Selecionar funcionário para nova hora extra
   const handleSelecionarFuncionario = (e) => {
     const funcionarioId = parseInt(e.target.value);
@@ -179,7 +165,6 @@ const HorasExtrasTab = () => {
       });
     }
   };
-
   // Adicionar nova hora extra
   const handleAddOvertime = (e) => {
     e.preventDefault();
@@ -243,14 +228,12 @@ const HorasExtrasTab = () => {
       setObservacaoRejeicao('');
     }
   };
-
   // Função para abrir modal de rejeição
   const abrirModalRejeitar = (overtime) => {
     setSolicitacaoSelecionada(overtime);
     setObservacaoRejeicao('');
     setModalRejeitarAberto(true);
   };
-
   // Função para detectar horas extras automaticamente
   const detectOvertime = () => {
     const pontoRegistros = JSON.parse(localStorage.getItem('pontoRegistros') || '[]');
@@ -288,7 +271,6 @@ const HorasExtrasTab = () => {
       alert('Nenhuma nova hora extra detectada.');
     }
   };
-
   // Renderizar cor do status
   const renderizarStatus = (status) => {
     let corClasse = '';
@@ -316,7 +298,6 @@ const HorasExtrasTab = () => {
       </span>
     );
   };
-
   return (
     <div className="bg-purple-900 min-h-screen p-4 text-white">
       <div className="max-w-7xl mx-auto">
@@ -324,8 +305,8 @@ const HorasExtrasTab = () => {
         <div className="flex border-b border-purple-700 mb-6">
           <button
             className={`py-2 px-4 font-medium rounded-t-lg mr-2 ${
-              activeTab === 'horasExtras' 
-                ? 'bg-purple-800 border-t border-l border-r border-purple-700' 
+              activeTab === 'horasExtras'
+                ? 'bg-purple-800 border-t border-l border-r border-purple-700'
                 : 'bg-purple-950 text-purple-300 hover:bg-purple-800 hover:text-white'
             }`}
             onClick={() => setActiveTab('horasExtras')}
@@ -334,8 +315,8 @@ const HorasExtrasTab = () => {
           </button>
           <button
             className={`py-2 px-4 font-medium rounded-t-lg mr-2 ${
-              activeTab === 'ferias' 
-                ? 'bg-purple-800 border-t border-l border-r border-purple-700' 
+              activeTab === 'ferias'
+                ? 'bg-purple-800 border-t border-l border-r border-purple-700'
                 : 'bg-purple-950 text-purple-300 hover:bg-purple-800 hover:text-white'
             }`}
             onClick={() => setActiveTab('ferias')}
@@ -344,8 +325,8 @@ const HorasExtrasTab = () => {
           </button>
           <button
             className={`py-2 px-4 font-medium rounded-t-lg mr-2 ${
-              activeTab === 'folgas' 
-                ? 'bg-purple-800 border-t border-l border-r border-purple-700' 
+              activeTab === 'folgas'
+                ? 'bg-purple-800 border-t border-l border-r border-purple-700'
                 : 'bg-purple-950 text-purple-300 hover:bg-purple-800 hover:text-white'
             }`}
             onClick={() => setActiveTab('folgas')}
@@ -353,12 +334,10 @@ const HorasExtrasTab = () => {
             Folgas
           </button>
         </div>
-
         {/* Tab Content */}
         {activeTab === 'horasExtras' && (
           <div className="bg-purple-800 bg-opacity-40 backdrop-blur-sm rounded-lg shadow-lg p-6">
             <h1 className="text-2xl font-bold mb-6">Gerenciamento de Horas Extras</h1>
-            
             {/* Botão para forçar atualização da lista */}
             <div className="mb-4">
               <button
@@ -423,7 +402,6 @@ const HorasExtrasTab = () => {
                 </div>
               </div>
             </div>
-
             {/* Nova Hora Extra */}
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-4">Registrar Nova Hora Extra</h2>
@@ -572,7 +550,6 @@ const HorasExtrasTab = () => {
                 </table>
               </div>
             </div>
-
             {/* Dashboard de horas extras */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Card - Total de Horas Extras */}
@@ -615,7 +592,7 @@ const HorasExtrasTab = () => {
                     .toFixed(1)}h a processar
                 </p>
               </div>
-              {/* Card - Top Funcionários */}
+                                     {/* Card - Top Funcionários */}
               <div className="bg-purple-800 bg-opacity-40 backdrop-blur-sm rounded-lg shadow-lg p-4">
                 <div className="flex items-center mb-4">
                   <div className="bg-blue-600 p-2 rounded-full mr-2">
@@ -626,44 +603,61 @@ const HorasExtrasTab = () => {
                   <h2 className="text-lg font-semibold">Top Funcionários</h2>
                 </div>
                 <ul className="space-y-2">
-                  {Object.entries(
-                    overtimeEntries
-                      .filter(entry => entry.status === 'aprovado')
+                  {(() => {
+                    // Filtra e agrega as horas extras por funcionário
+                    const funcionariosHoras = overtimeEntries
+                      .filter(entry => entry.status === 'aprovado' && entry.funcionarioNome && entry.funcionarioNome !== 'undefined')
                       .reduce((acc, entry) => {
-                        if (!acc[entry.funcionarioNome]) {
-                          acc[entry.funcionarioNome] = 0;
+                        const nome = entry.funcionarioNome || 'Não identificado';
+                        if (!acc[nome]) {
+                          acc[nome] = 0;
                         }
-                        acc[entry.funcionarioNome] += entry.hours;
+                        acc[nome] += entry.hours;
                         return acc;
-                      }, {})
-                  )
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 3)
-                    .map(([nome, horas], index) => (
+                      }, {});
+                    
+                    // Converte para array, ordena e pega os top 3
+                    const topFuncionarios = Object.entries(funcionariosHoras)
+                      .sort((a, b) => b[1] - a[1])
+                      .slice(0, 3);
+                      
+                    // Se não há funcionários com horas extras aprovadas
+                    if (topFuncionarios.length === 0) {
+                      return <li className="text-purple-300 text-sm">Nenhuma hora extra aprovada</li>;
+                    }
+                      
+                    // Renderiza a lista de top funcionários
+                    return topFuncionarios.map(([nome, horas], index) => (
                       <li key={index} className="flex justify-between items-center">
                         <span>{nome}</span>
-                        <span className="bg-purple-700 px-2 py-1 rounded-full text-xs">
-                          {horas.toFixed(1)}h
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="bg-purple-700 px-2 py-1 rounded-full text-xs">
+                            {horas.toFixed(1)}h
+                          </span>
+                          <button 
+                            onClick={() => {
+                              // Remove todas as horas extras aprovadas deste funcionário
+                              const updatedEntries = overtimeEntries.map(entry => 
+                                entry.funcionarioNome === nome && entry.status === 'aprovado'
+                                  ? {...entry, status: 'rejeitado', observacao: 'Removido da lista de top funcionários'}
+                                  : entry
+                              );
+                              setOvertimeEntries(updatedEntries);
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white text-xs p-1 rounded-full"
+                            title="Remover funcionário da lista"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
                       </li>
-                    ))}
-                  {Object.entries(
-                    overtimeEntries
-                      .filter(entry => entry.status === 'aprovado')
-                      .reduce((acc, entry) => {
-                        if (!acc[entry.funcionarioNome]) {
-                          acc[entry.funcionarioNome] = 0;
-                        }
-                        acc[entry.funcionarioNome] += entry.hours;
-                        return acc;
-                      }, {})
-                  ).length === 0 && (
-                    <li className="text-purple-300 text-sm">Nenhuma hora extra aprovada</li>
-                  )}
+                    ));
+                  })()}
                 </ul>
               </div>
             </div>
-
             {/* Modal de Rejeição */}
             {modalRejeitarAberto && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -701,7 +695,6 @@ const HorasExtrasTab = () => {
             )}
           </div>
         )}
-
         {activeTab === 'ferias' && <FeriasTab />}
         {activeTab === 'folgas' && <FolgaTab />}
       </div>

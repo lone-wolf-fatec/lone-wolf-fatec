@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 
 const FeriasTab = () => {
   // Estado para os registros de férias
+
+  const [folgaEntries, setFolgaEntries] = useState(() => {
+    const stored = localStorage.getItem('folgaEntries');
+    return stored ? JSON.parse(stored) : [];
+  });
+  
   const [feriasEntries, setFeriasEntries] = useState(() => {
     const storedFerias = localStorage.getItem('feriasEntries');
     return storedFerias ? JSON.parse(storedFerias) : [
@@ -60,10 +66,41 @@ const FeriasTab = () => {
     ];
   });
   
-  // NOVA ADIÇÃO: Estado para armazenar todos os funcionários possíveis
+  // Estado para contestações
+  const [contestacoes, setContestacoes] = useState([]);
+  
+  // Estado para modal de contestação
+  const [modalContestacaoAberto, setModalContestacaoAberto] = useState(false);
+  const [contestacaoSelecionada, setContestacaoSelecionada] = useState(null);
+  const [feedbackContestacao, setFeedbackContestacao] = useState('');
+  const [statusContestacao, setStatusContestacao] = useState('aprovado');
+  
+  // Estado para armazenar todos os funcionários possíveis
   const [allFuncionarios, setAllFuncionarios] = useState([]);
 
-  // NOVA ADIÇÃO: Função para obter todos os funcionários possíveis
+  // Estado para modal de rejeição
+  const [modalRejeitarAberto, setModalRejeitarAberto] = useState(false);
+  const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState(null);
+  const [observacaoRejeicao, setObservacaoRejeicao] = useState('');
+  
+  // Estado para filtros
+  const [filtros, setFiltros] = useState({
+    status: '',
+    funcionario: '',
+    periodo: '',
+    contestacao: ''
+  });
+  
+  // Estado para exibir modal de confirmação
+  const [confirmacaoModal, setConfirmacaoModal] = useState({
+    aberto: false,
+    mensagem: '',
+    callback: null
+  });
+  
+  // Dias de férias calculados
+  const [diasFerias, setDiasFerias] = useState(0);
+  // Função para obter todos os funcionários possíveis
   const getAllPossibleFuncionarios = () => {
     try {
       // 1. Obter do registeredUsers
@@ -115,7 +152,7 @@ const FeriasTab = () => {
     }
   };
 
-  // NOVA ADIÇÃO: useEffect para manter a lista de funcionários atualizada
+  // useEffect para manter a lista de funcionários atualizada
   useEffect(() => {
     const updateAllFuncionarios = () => {
       const allPossible = getAllPossibleFuncionarios();
@@ -131,28 +168,16 @@ const FeriasTab = () => {
     return () => clearInterval(interval);
   }, [funcionarios, feriasEntries]);
   
-  // Estado para modal de rejeição
-  const [modalRejeitarAberto, setModalRejeitarAberto] = useState(false);
-  const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState(null);
-  const [observacaoRejeicao, setObservacaoRejeicao] = useState('');
-  
-  // Estado para filtros
-  const [filtros, setFiltros] = useState({
-    status: '',
-    funcionario: '',
-    periodo: ''
-  });
-  
-  // Estado para exibir modal de confirmação
-  const [confirmacaoModal, setConfirmacaoModal] = useState({
-    aberto: false,
-    mensagem: '',
-    callback: null
-  });
-  
-  // Dias de férias calculados
-  const [diasFerias, setDiasFerias] = useState(0);
-  
+  // Carregar contestações do localStorage
+  useEffect(() => {
+    const storedContestacoes = localStorage.getItem('contestacoes');
+    if (storedContestacoes) {
+      const allContestacoes = JSON.parse(storedContestacoes);
+      const feriasContestacoes = allContestacoes.filter(c => c.tipo === 'ferias');
+      setContestacoes(feriasContestacoes);
+    }
+  }, []);
+
   // Salvar férias no localStorage quando mudar
   useEffect(() => {
     localStorage.setItem('feriasEntries', JSON.stringify(feriasEntries));
@@ -173,7 +198,6 @@ const FeriasTab = () => {
       setDiasFerias(0);
     }
   }, [newFerias.dataInicio, newFerias.dataFim]);
-  
   // Filtrar férias
   const feriasFiltradas = feriasEntries.filter(ferias => {
     const matchStatus = filtros.status === '' || ferias.status === filtros.status;
@@ -193,7 +217,15 @@ const FeriasTab = () => {
                     dataInicio.getFullYear() === proximoMes.getFullYear();
     }
     
-    return matchStatus && matchFuncionario && matchPeriodo;
+    // Novo filtro para contestações
+    let matchContestacao = true;
+    if (filtros.contestacao === 'com-contestacao') {
+      matchContestacao = contestacoes.some(c => c.itemId === ferias.id);
+    } else if (filtros.contestacao === 'sem-contestacao') {
+      matchContestacao = !contestacoes.some(c => c.itemId === ferias.id);
+    }
+    
+    return matchStatus && matchFuncionario && matchPeriodo && matchContestacao;
   });
   
   // Ordenar por data de início (mais próximas primeiro)
@@ -318,7 +350,6 @@ const FeriasTab = () => {
     
     alert('Solicitação de férias registrada com sucesso!');
   };
-  
   // Função para alterar status (aprovação/rejeição)
   const changeStatus = (id, newStatus) => {
     const entryIndex = feriasEntries.findIndex(entry => entry.id === id);
@@ -360,7 +391,7 @@ const FeriasTab = () => {
     notificacoes.push({
       id: Date.now(),
       userId: updatedEntries[entryIndex].funcionarioId,
-      message: `Sua solicitação de férias de ${updatedEntries[entryIndex].dataInicio} a ${updatedEntries[entryIndex].dataFim} foi ${newStatus === 'aprovado' ? 'aprovada' : 'rejeitada'}.`,
+      message: `Sua solicitação de férias de ${updatedEntries[entryIndex].dataInicio} a ${updatedEntries[entryIndex].dataFim} foi ${newStatus === 'aprovado' ? 'aprovada' : 'rejeitada'}.${newStatus === 'rejeitado' ? ' Motivo: ' + observacaoRejeicao : ''}`,
       date: new Date().toLocaleDateString('pt-BR'),
       read: false
     });
@@ -380,6 +411,73 @@ const FeriasTab = () => {
     setModalRejeitarAberto(true);
   };
   
+  // Função para responder a contestação
+  const responderContestacao = (contestacao) => {
+    setContestacaoSelecionada(contestacao);
+    setFeedbackContestacao('');
+    setStatusContestacao('aprovado');
+    setModalContestacaoAberto(true);
+  };
+  
+  // Função para salvar resposta da contestação
+  const salvarRespostaContestacao = () => {
+    if (!feedbackContestacao) {
+      alert('Por favor, forneça um feedback para a contestação');
+      return;
+    }
+    
+    // Atualizar contestação
+    const storedContestacoes = JSON.parse(localStorage.getItem('contestacoes') || '[]');
+    const updatedContestacoes = storedContestacoes.map(c => {
+      if (c.id === contestacaoSelecionada.id) {
+        return {
+          ...c,
+          status: statusContestacao,
+          feedback_admin: feedbackContestacao,
+          dataResposta: new Date().toLocaleDateString('pt-BR')
+        };
+      }
+      return c;
+    });
+    
+    localStorage.setItem('contestacoes', JSON.stringify(updatedContestacoes));
+    setContestacoes(updatedContestacoes.filter(c => c.tipo === 'ferias'));
+    
+    // Se a contestação foi aprovada e o funcionário queria reagendar
+    if (statusContestacao === 'aprovado' && contestacaoSelecionada.resposta === 'reagendar') {
+      // Buscar a férias original
+      const feriaIndex = feriasEntries.findIndex(f => f.id === contestacaoSelecionada.itemId);
+      if (feriaIndex !== -1) {
+        // Criar nova férias com as datas reagendadas
+        const updatedFeriasEntries = [...feriasEntries];
+        updatedFeriasEntries[feriaIndex] = {
+          ...updatedFeriasEntries[feriaIndex],
+          dataInicio: contestacaoSelecionada.novaDataInicio,
+          dataFim: contestacaoSelecionada.novaDataFim,
+          status: 'aprovado',
+          observacao: `${updatedFeriasEntries[feriaIndex].observacao || ''} [Reagendado após contestação]`.trim()
+        };
+        setFeriasEntries(updatedFeriasEntries);
+      }
+    }
+    
+    // Notificar funcionário
+    const notificacoes = JSON.parse(localStorage.getItem('userNotifications') || '[]');
+    notificacoes.push({
+      id: Date.now(),
+      userId: contestacaoSelecionada.funcionarioId,
+      message: `Sua contestação de férias foi ${
+        statusContestacao === 'aprovado' ? 'aprovada' : 'rejeitada'
+      }. Feedback: ${feedbackContestacao}`,
+      date: new Date().toLocaleDateString('pt-BR'),
+      read: false
+    });
+    localStorage.setItem('userNotifications', JSON.stringify(notificacoes));
+    
+    setModalContestacaoAberto(false);
+    alert(`Contestação ${statusContestacao === 'aprovado' ? 'aprovada' : 'rejeitada'} com sucesso!`);
+  };
+  
   // Renderizar cor do status
   const renderizarStatus = (status) => {
     let corClasse = '';
@@ -394,6 +492,45 @@ const FeriasTab = () => {
         break;
       case 'rejeitado':
         corClasse = 'bg-red-600';
+        break;
+      default:
+        corClasse = 'bg-gray-600';
+    }
+    
+    return (
+      <span className={`inline-block px-2 py-1 rounded-full text-xs ${corClasse}`}>
+        {texto}
+      </span>
+    );
+  };
+  
+  // Verificar se há contestação para uma férias
+  const temContestacao = (feriasId) => {
+    return contestacoes.some(c => c.itemId === feriasId);
+  };
+  
+  // Obter contestação para uma férias
+  const getContestacao = (feriasId) => {
+    return contestacoes.find(c => c.itemId === feriasId);
+  };
+  
+  // Renderizar status da contestação
+  const renderizarStatusContestacao = (status) => {
+    let corClasse = '';
+    let texto = status.toUpperCase();
+    
+    switch(status) {
+      case 'aprovado':
+        corClasse = 'bg-green-600';
+        texto = 'APROVADA';
+        break;
+      case 'rejeitado':
+        corClasse = 'bg-red-600';
+        texto = 'REJEITADA';
+        break;
+      case 'pendente':
+        corClasse = 'bg-yellow-600';
+        texto = 'PENDENTE';
         break;
       default:
         corClasse = 'bg-gray-600';
@@ -432,7 +569,6 @@ const FeriasTab = () => {
   };
   
   const bancoFerias = calcularBancoFerias();
-  
   return (
     <div className="bg-purple-800 bg-opacity-40 backdrop-blur-sm rounded-lg shadow-lg p-6">
       <h1 className="text-2xl font-bold">Gerenciamento de Férias</h1>
@@ -440,7 +576,7 @@ const FeriasTab = () => {
       {/* Filtros */}
       <div className="bg-purple-900 bg-opacity-40 rounded-lg p-4 mb-6">
         <h2 className="text-xl font-semibold mb-4">Filtros</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm text-purple-300 mb-1">Status</label>
             <select 
@@ -454,7 +590,7 @@ const FeriasTab = () => {
               <option value="rejeitado">Rejeitado</option>
             </select>
           </div>
-          {/* ALTERAÇÃO: Select de filtro de funcionário */}
+          {/* Select de filtro de funcionário */}
           <div>
             <label className="block text-sm text-purple-300 mb-1">Funcionário</label>
             <select 
@@ -483,9 +619,21 @@ const FeriasTab = () => {
               <option value="seis-meses">Próximos 6 meses</option>
             </select>
           </div>
+          <div>
+            <label className="block text-sm text-purple-300 mb-1">Contestações</label>
+            <select 
+              className="w-full bg-purple-800 border border-purple-700 rounded-md p-2 text-white"
+              value={filtros.contestacao}
+              onChange={(e) => setFiltros({...filtros, contestacao: e.target.value})}
+            >
+              <option value="">Todas as solicitações</option>
+              <option value="com-contestacao">Com contestação</option>
+              <option value="sem-contestacao">Sem contestação</option>
+            </select>
+          </div>
         </div>
       </div>
-      
+
       {/* Nova solicitação de férias */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4">Registrar Nova Solicitação de Férias</h2>
@@ -540,24 +688,29 @@ const FeriasTab = () => {
               ></textarea>
             </div>
           </div>
-          
-          {diasFerias > 0 && (
-            <div className="bg-purple-700 bg-opacity-40 p-3 rounded mb-4">
-              <p className="text-white">
-                Total de dias de férias: <strong>{diasFerias} dias</strong>
-              </p>
-            </div>
-          )}
-          
-          <button 
-            type="submit"
-            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Solicitar Férias
-          </button>
+          {diasFerias > 0 ? (
+  <div className="bg-purple-700 bg-opacity-40 p-3 rounded mb-4">
+    <p className="text-white">
+      Total de dias de férias: <strong>{diasFerias} dias</strong>
+    </p>
+  </div>
+) : (
+  <div className="bg-purple-700 bg-opacity-40 p-3 rounded mb-4">
+    <p className="text-white">
+      Total de dias de férias: <strong>0 dias</strong>
+    </p>
+  </div>
+)}
+
+<button 
+  type="submit"
+  className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
+>
+  Solicitar Férias
+</button>
+
         </form>
       </div>
-      
       {/* Dashboard de férias */}
       <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card - Dias Disponíveis */}
@@ -571,7 +724,7 @@ const FeriasTab = () => {
             <h2 className="text-lg font-semibold">Dias Disponíveis</h2>
           </div>
           <p className="text-2xl font-bold mb-2">
-            {bancoFerias.diasDisponiveis} dias
+            31 dias
           </p>
           <p className="text-purple-300 text-sm">
             Total de dias disponíveis para todos os funcionários
@@ -627,6 +780,7 @@ const FeriasTab = () => {
                 <th className="px-4 py-2 text-left">Dias</th>
                 <th className="px-4 py-2 text-left">Observação</th>
                 <th className="px-4 py-2 text-left">Status</th>
+                <th className="px-4 py-2 text-left">Contestação</th>
                 <th className="px-4 py-2 text-left">Ações</th>
               </tr>
             </thead>
@@ -645,6 +799,22 @@ const FeriasTab = () => {
                   </td>
                   <td className="px-4 py-3">{renderizarStatus(entry.status)}</td>
                   <td className="px-4 py-3">
+                    {temContestacao(entry.id) ? (
+                      <div>
+                        {renderizarStatusContestacao(getContestacao(entry.id).status)}
+                        <button
+                          onClick={() => responderContestacao(getContestacao(entry.id))}
+                          className="ml-2 bg-purple-600 hover:bg-purple-700 text-white text-xs px-2 py-1 rounded"
+                          disabled={getContestacao(entry.id).status !== 'pendente'}
+                        >
+                          {getContestacao(entry.id).status === 'pendente' ? 'Responder' : 'Ver Detalhes'}
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400">Sem contestação</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
                     {entry.status === 'pendente' && (
                       <div className="flex space-x-2">
                         <button 
@@ -661,9 +831,9 @@ const FeriasTab = () => {
                         </button>
                       </div>
                     )}
-                    {(entry.status === 'aprovado' || entry.status === 'rejeitado') && entry.motivo_rejeicao && (
-                      <div className="text-xs text-purple-300" title={entry.motivo_rejeicao}>
-                        Obs: {entry.motivo_rejeicao.substring(0, 30)}
+                    {entry.status === 'rejeitado' && entry.motivo_rejeicao && (
+                      <div className="text-xs text-red-300" title={entry.motivo_rejeicao}>
+                        Motivo: {entry.motivo_rejeicao.substring(0, 30)}
                         {entry.motivo_rejeicao.length > 30 ? '...' : ''}
                       </div>
                     )}
@@ -673,7 +843,7 @@ const FeriasTab = () => {
               
               {feriasOrdenadas.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="px-4 py-6 text-center text-purple-300">
+                  <td colSpan="7" className="px-4 py-6 text-center text-purple-300">
                     Nenhuma solicitação de férias encontrada com os filtros selecionados.
                   </td>
                 </tr>
@@ -699,7 +869,6 @@ const FeriasTab = () => {
           Gerar Relatório de Férias
         </button>
       </div>
-      
       {/* Modal de Rejeição */}
       {modalRejeitarAberto && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -728,8 +897,96 @@ const FeriasTab = () => {
               <button 
                 onClick={() => changeStatus(solicitacaoSelecionada?.id, 'rejeitado')}
                 className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded"
+                disabled={!observacaoRejeicao}
               >
                 Rejeitar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal de Resposta à Contestação */}
+      {modalContestacaoAberto && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-purple-800 rounded-lg shadow-lg p-6 w-full max-w-lg">
+            <h3 className="text-xl font-bold mb-4">Responder Contestação de Férias</h3>
+            
+            <div className="bg-purple-700 bg-opacity-40 p-4 rounded-lg mb-4">
+              <h4 className="font-semibold mb-2">Detalhes da Contestação</h4>
+              <p><strong>Funcionário:</strong> {contestacaoSelecionada?.funcionarioNome}</p>
+              <p><strong>Data Original:</strong> {contestacaoSelecionada?.dataOriginal}</p>
+              <p><strong>Tipo de Contestação:</strong> {
+                contestacaoSelecionada?.resposta === 'concordar' ? 'Concordar com a decisão' :
+                contestacaoSelecionada?.resposta === 'discordar' ? 'Discordar da decisão' :
+                'Solicitar reagendamento'
+              }</p>
+              
+              {contestacaoSelecionada?.resposta === 'reagendar' && (
+                <div className="mt-2 p-2 bg-purple-600 bg-opacity-40 rounded">
+                  <p><strong>Nova data solicitada:</strong> {
+                    contestacaoSelecionada.novaDataInicio && contestacaoSelecionada.novaDataFim ? 
+                    `${contestacaoSelecionada.novaDataInicio} a ${contestacaoSelecionada.novaDataFim}` :
+                    contestacaoSelecionada.novaDataInicio
+                  }</p>
+                </div>
+              )}
+              
+              <div className="mt-2">
+                <p><strong>Motivo:</strong> {contestacaoSelecionada?.motivo}</p>
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm text-purple-300 mb-1">Decisão</label>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setStatusContestacao('aprovado')}
+                  className={`px-4 py-2 rounded ${
+                    statusContestacao === 'aprovado' ? 'bg-green-600 text-white' : 'bg-purple-700 text-purple-300'
+                  }`}
+                >
+                  Aprovar
+                </button>
+                <button
+                  onClick={() => setStatusContestacao('rejeitado')}
+                  className={`px-4 py-2 rounded ${
+                    statusContestacao === 'rejeitado' ? 'bg-red-600 text-white' : 'bg-purple-700 text-purple-300'
+                  }`}
+                >
+                  Rejeitar
+                </button>
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm text-purple-300 mb-1">Feedback ao Funcionário</label>
+              <textarea 
+                className="w-full bg-purple-700 border border-purple-600 rounded-md p-2 text-white"
+                value={feedbackContestacao}
+                onChange={(e) => setFeedbackContestacao(e.target.value)}
+                rows={4}
+                placeholder={`Descreva o motivo para ${
+                  statusContestacao === 'aprovado' ? 'aprovar' : 'rejeitar'
+                } a contestação...`}
+              ></textarea>
+            </div>
+            
+            <div className="flex justify-end space-x-2">
+              <button 
+                onClick={() => setModalContestacaoAberto(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={salvarRespostaContestacao}
+                className={`${
+                  statusContestacao === 'aprovado' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+                } text-white font-medium py-2 px-4 rounded`}
+                disabled={!feedbackContestacao}
+              >
+                {statusContestacao === 'aprovado' ? 'Aprovar Contestação' : 'Rejeitar Contestação'}
               </button>
             </div>
           </div>

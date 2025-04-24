@@ -7,6 +7,7 @@ import RelatoriosTab from '../components/RelatoriosTab';
 import NotificacoesTab from '../components/NotificacoesTab';
 import BancoHorasTab from '../components/BancoHorasTab';
 import AusenciasTab from '../components/AusenciasTab';
+import ContestacaoAdmin from '../components/ContestacaoAdmin';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -39,6 +40,9 @@ const AdminDashboard = () => {
   
   // Estado para mostrar/esconder menu de notificações
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
+  
+  // Estado para contagem de contestações pendentes
+  const [contestacoesPendentes, setContestacoesPendentes] = useState(0);
   
   // Funções para manipular notificações
   const unreadNotificationsCount = notifications.filter(n => !n.read).length;
@@ -81,6 +85,21 @@ const AdminDashboard = () => {
     // Salvando notificações quando alteradas
     localStorage.setItem('adminNotifications', JSON.stringify(notifications));
   }, [notifications]);
+  
+  // Verificar contestações pendentes
+  useEffect(() => {
+    const checkPendingContestacoes = () => {
+      const contestacoes = JSON.parse(localStorage.getItem('contestacoes') || '[]');
+      const pendentes = contestacoes.filter(c => c.status === 'pendente').length;
+      setContestacoesPendentes(pendentes);
+    };
+    
+    checkPendingContestacoes();
+    
+    // Verificar a cada 10 segundos
+    const interval = setInterval(checkPendingContestacoes, 10000);
+    return () => clearInterval(interval);
+  }, []);
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 to-black text-white flex flex-col">
@@ -235,6 +254,22 @@ const AdminDashboard = () => {
                 </li>
                 <li className="mb-2">
                   <button 
+                    onClick={() => handleNavigation('contestacoes')}
+                    className={`w-full flex items-center p-2 rounded-md relative ${activeTab === 'contestacoes' ? 'bg-purple-700' : 'hover:bg-purple-800'}`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                    Contestações
+                    {contestacoesPendentes > 0 && (
+                      <span className="absolute right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {contestacoesPendentes}
+                      </span>
+                    )}
+                  </button>
+                </li>
+                <li className="mb-2">
+                  <button 
                     onClick={() => handleNavigation('ausencias')}
                     className={`w-full flex items-center p-2 rounded-md ${activeTab === 'ausencias' ? 'bg-purple-700' : 'hover:bg-purple-800'}`}
                   >
@@ -287,6 +322,7 @@ const AdminDashboard = () => {
           {activeTab === 'pontoBatido' && <PontoBatidoTab />}
           {activeTab === 'ajustesPonto' && <AjustesPontoTab />}
           {activeTab === 'jornadas' && <JornadasTab />}
+          {activeTab === 'contestacoes' && <ContestacaoAdmin />}
           {activeTab === 'ausencias' && <AusenciasTab />}
           {activeTab === 'bancoHoras' && <BancoHorasTab />}
           {activeTab === 'relatorios' && <RelatoriosTab />}
