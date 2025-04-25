@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 Como Usar
 =======
 # Guia de Configuração de Projeto React com Tailwind CSS
