@@ -1,4 +1,6 @@
-
+<p align="center">
+<img src="https://raw.githubusercontent.com/lone-wolf-fatec/lone-wolf-fatec/main/banner-lone-wolf.svg" alt="Lone Wolf Banner" width="100%"/>
+</p>
 
 ---
 
